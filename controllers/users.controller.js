@@ -1,4 +1,7 @@
 const {response, request}  = require('express');
+const User = require('../models/user');
+const bcryptjs = require('bcryptjs');
+
 
 const getUsers = (req = request, res = response)  => {
     const query = req.query
@@ -9,11 +12,20 @@ const getUsers = (req = request, res = response)  => {
   }
 
 
-  const updateUsers = (req, res = response)  => {
-    const id = req.params.id;
+  const updateUsers = async(req, res = response)  => {
+    const {id} = req.params;
+    const {password, google, email, ...rest} = req.body;
+    //Todo: validate on db 
+
+    if(password) {
+      const salt = bcryptjs.genSaltSync();
+      rest.password = bcryptjs.hashSync(password, salt);
+    }
+    const user =  await User.findByIdAndUpdate(id, rest,{new:true});
     res.status(200).json({
         msg:'put API - Controller',
-        id
+        id,
+        user
     });
   }
 
@@ -29,11 +41,20 @@ const getUsers = (req = request, res = response)  => {
     });
   }
 
-  const createUsers = (req, res = response)  => {
-    const body = req.body;
-    res.status(200).json({
-        msg:'post API - Controller',
-        body
+  const createUsers = async (req, res = response)  => {
+
+    const {name, email, password, role} = req.body;
+    const user =  new User({name, email, password, role});//Create the new object
+
+    //encrypt password
+    const salt = bcryptjs.genSaltSync();
+    user.password = bcryptjs.hashSync(user.password, salt);
+    //save in DB
+
+    await user.save();//Create registration
+
+    res.json({
+        user
     });
   }
 
