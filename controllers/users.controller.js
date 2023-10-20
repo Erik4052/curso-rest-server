@@ -46,15 +46,19 @@ const getUsers = async(req = request, res = response)  => {
   const deleteUsers = async(req, res = response)  => {
 
     const id = req.params.id;
-
+    //const uid = req.uid;
     //physic delete
     //const userDeleted = await User.findByIdAndDelete(id);
 
     const userDeleted = await User.findByIdAndUpdate(id, {state:false}, {new:true});
+    const userAuthenticated = req.user;
 
     //const params = req.params; params with the structure: "/:id", we get the queries, comming from the url like: users?id=1234
     res.status(400).json({
-       userDeleted
+       userDeleted,
+       userAuthenticated
+       //id,
+       //uid
         //params
     });
   }
